@@ -11,20 +11,20 @@ When descending along our cost curve in two dimensions, we used the slope of the
 
 <img src="./images/new_gradientdescent.png" width="600">
 
-But really it's an analogous approach.  Just like we can calculate the use derivative of a function $f(x)$ to calculate the slope at a given value of $x$ on the graph and thus our next step.  Here, we calculated the partial derivative with respect to both variables, our slope and y-intercept, to calculate the amount to move next in either direction, and thus to steer us towards our minimum.   
+But really it's an analogous approach.  Just like we can calculate the use derivative of a function $f(x)$ to calculate the slope at a given value of $x$ on the graph and thus our next step.  Here, we calculated the partial derivative with respect to both variables, our slope and y-intercept, to calculate the amount to move next in either direction and thus to steer us towards our minimum.   
 
 ## Objectives
 
 You will be able to:
-- Create a full gradient descent algorithm
-- Apply a gradient descent algorithm on a data set with more than one variable
+* Create functions to perform a simulation of gradient descent for an actual dataset
+* Represent RSS as a multivariable function and take partial derivatives to perform gradient descent
 
 ## Reviewing our gradient descent formulas
 
 Luckily for us, we already did the hard work of deriving these formulas.  Now we get to see the fruit of our labor.  The following formulas tell us how to update regression variables of $m$ and $b$ to approach a "best fit" line.   
 
-* $ \frac{dJ}{dm}J(m,b) = -2\sum_{i = 1}^n x_i(y_i - (mx_i + b)) = -2\sum_{i = 1}^n x_i*\epsilon_i$ 
-* $ \frac{dJ}{db}J(m,b) = -2\sum_{i = 1}^n(y_i - (mx_i + b)) = -2\sum_{i = 1}^n \epsilon_i $
+- $ \frac{dJ}{dm}J(m,b) = -2\sum_{i = 1}^n x_i(y_i - (mx_i + b)) = -2\sum_{i = 1}^n x_i*\epsilon_i$ 
+- $ \frac{dJ}{db}J(m,b) = -2\sum_{i = 1}^n(y_i - (mx_i + b)) = -2\sum_{i = 1}^n \epsilon_i $
 
 Now the formulas above tell us to take some dataset, with values of $x$ and $y$, and then given a regression formula with values $m$ and $b$, iterate through our dataset, and use the formulas to calculate an update to $m$ and $b$.  So ultimately, to descend along the cost function, we will use the calculations:
 
@@ -39,6 +39,7 @@ Ok let's turn this into code.  First, let's initialize our data like we did befo
 import numpy as np
 np.set_printoptions(formatter={'float_kind':'{:f}'.format})
 import matplotlib.pyplot as plt
+%matplotlib inline
 np.random.seed(225)
 
 x = np.random.rand(30, 1).reshape(30)
@@ -92,7 +93,7 @@ The code above represents **just one** update to our regression line, and theref
 Ok, the above code is very close to what we want, but we just need to make tweaks to our code before it's perfect.
 
 The first one is obvious if we think about what these formulas are really telling us to do.  Look at the graph below, and think about what it means to change each of our $m$ and $b$ variables by at least the sum of all of the errors, of the $y$ values that our regression line predicts and our actual data.  That would be an enormous change.  To ensure that we drastically updating our regression line with each step, we multiply each of these partial derivatives by a learning rate.  As we have seen before, the learning rate is just a small number, like $.
-01$ which controls for how large our updates to the regression line will be.  The learning rate is  represented by the Greek letter eta, $\eta$, or alpha $\alpha$.  We'll use eta, so $\eta = .01$ means the learning rate is $.01$.
+01$ which controls how large our updates to the regression line will be.  The learning rate is  represented by the Greek letter eta, $\eta$, or alpha $\alpha$.  We'll use eta, so $\eta = .01$ means the learning rate is $.01$.
 
 Multiplying our step size by our learning rate works fine, so long as we multiply both of the partial derivatives by the same amount.  This is because without gradient,  $ \nabla J(m,b)$, we think of as steering us in the correct direction.  In other words, our derivatives ensure we are making the correct **proportional** changes to $m$ and $b$.  So scaling down these changes to make sure we don't update our regression line too quickly works fine, so long as we keep me moving in the correct direction.  While we're at it, we can also get rid of multiplying our partials by 2.  As mentioned, so long as our changes are proportional we're in good shape. 
 
@@ -145,10 +146,6 @@ Now let's initialize `b` and `m` as 0 and run a first iteration of the `step_gra
 # b= 3.02503, m= 2.07286
 ```
 
-    3.0250308395837813
-    2.0728619246505193
-
-
 So just looking at input and output, we begin by setting $b$ and $m$ to 0 and 0.  Then from our step_gradient function, we receive new values of $b$ and $m$ of 3.02503 and 2.0728.  Now what we need to do, is take another step in the correct direction by calling our step gradient function with our updated values of $b$ and $m$.
 
 
@@ -156,13 +153,6 @@ So just looking at input and output, we begin by setting $b$ and $m$ to 0 and 0.
 
 # b = 5.63489, m= 3.902265
 ```
-
-
-
-
-    (5.634896312558807, 3.902265648903966)
-
-
 
 Let's do this, say, 1000 times.
 
@@ -177,13 +167,6 @@ Let's take a look at the estimates in the last iteration.
 ```python
 # 
 ```
-
-
-
-
-    (3.1619764855577257, 49.84313430300858)
-
-
 
 As you can see, our  m  and  b  values both update with each step. Not only that, but with each step, the size of the changes to  m and  b  decrease. This is because they are approaching a best fit line.
 
@@ -215,10 +198,6 @@ ax2.set_title('x_2')
 ax2.plot(x2, y, '.b');
 ```
 
-
-![png](index_files/index_18_0.png)
-
-
 Note that, for our gradients, when having multiple predictors $x_j$ with $j \in 1,\ldots, k$
 
 $$ \frac{dJ}{dm_j}J(m_j,b) = -2\sum_{i = 1}^n x_{j,i}(y_i - (\sum_{j=1}^km{x_{j,i}} + b)) = -2\sum_{i = 1}^n x_{j,i}*\epsilon_i$$
@@ -228,6 +207,10 @@ $$ \frac{dJ}{db}J(m_j,b) = -2\sum_{i = 1}^n(y_i - (\sum_{j=1}^km{x_{j,i}} + b)) 
 So we'll have one gradient per predictor along with the gradient for the intercept!
 
 Create the `step_gradient_multi` function below. As we said before, this means that we have more than one feature that we are using as an independent variable in the regression. This function will have the same inputs as `step_gradient`, but it will be able to handle having more than one value for m. It should return the final values for b and m in the form of a tuple.
+
+- `b_current` refers to the y-intercept at the current step
+- `m_current` refers to the slope at the current step
+- `points` are the data points to which we want to fit a line
 
 You might have to refactor your `error` at function if you want to use it with multiple m values.
 
@@ -239,31 +222,9 @@ def step_gradient_multi(b_current, m_current ,points):
 
 Apply 1 step to our data
 
-
-```python
-
-```
-
 Apply 500 steps to our data
 
-
-```python
-
-```
-
 Look at the last step
-
-
-```python
-
-```
-
-
-
-
-    (1.944428332442866, array([2.995890, -3.911055]))
-
-
 
 ## Level up - optional
 
